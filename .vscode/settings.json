@@ -1,6 +1,19 @@
 {
     "files.associations": {
         "iostream": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "utility": "cpp",
+        "format": "cpp",
+        "initializer_list": "cpp",
+        "vector": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp",
+        "xiosbase": "cpp",
+        "system_error": "cpp",
+        "algorithm": "cpp",
+        "limits": "cpp",
+        "atomic": "cpp",
+        "ios": "cpp",
+        "ostream": "cpp"
     }
 }
