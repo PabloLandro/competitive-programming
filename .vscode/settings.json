@@ -14,6 +14,12 @@
         "limits": "cpp",
         "atomic": "cpp",
         "ios": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "stack": "cpp",
+        "bitset": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "unordered_map": "cpp",
+        "queue": "cpp"
     }
 }
