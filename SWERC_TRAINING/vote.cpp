@@ -37,7 +37,24 @@ typedef vector<vector<pair<int, int>>> wgraph;
 #define FOR(i, a, b) for(int i = a; i < b; i++)
 #define ROF(i, a, b) for(int i = b-1; i>=0; i--)
 
+#define DEBUG false
+
+void print(string name, pi pair) {
+    if (DEBUG)
+        cout << name << ": (" << pair.F << ", " << pair.S << ")\n";
+}
+
+void print_v(vi v) {
+    if (!DEBUG)
+        return;
+    FOR(i,0,v.size())
+        cout << v[i] << " ";
+    cout << "\n";
+}
+
 void solve() {
+
+    //---------------READ INPUT-----------------------//
     int n;
     cin >> n;
     string s;
@@ -46,15 +63,16 @@ void solve() {
     FOR(i,0,n) {
         arr[i] = s[i] - '0';
     }
+    //------------------------------------------------//
 
     vi cost_0(n), cost_1(n), cost_2(n);
 
-    priority_queue<pi, vector<pi>, greater<pi>> pq_0;   // n of swaps to put -1 to 0
-    priority_queue<pi, vector<pi>, greater<pi>> pq_1;   // n of swaps to put 0 to 1
-    priority_queue<pi, vector<pi>, greater<pi>> pq_2;   // n of swaps to put -1 to 1
-    vector<pi> ar_0;
-    vector<pi> ar_1;
-    vector<pi> ar_2;
+    vi pos(n, -1);
+    priority_queue<pi, vector<pi>, greater<pi>> pq_0;
+    priority_queue<pi, vector<pi>, greater<pi>> pq_1;
+    priority_queue<pi, vector<pi>, greater<pi>> pq_2;
+
+    vi magic(n, 1);    // For a teller indicates wether closest 0 and 1 are on the same side (1)
     
 
     // Number of tellers with positive/negative vote
@@ -63,25 +81,31 @@ void solve() {
 
 
     // last real position with 0 or 1 count
-    int last_0=-INF;
+    int last_0=0;
     int last_1=-INF;
 
     int real_index = 0;
     int curr_count = 0;
 
+    //cout << "curr_count 1: ";
     FOR(i,0,n) {
+        //cout << curr_count << " ";
+        pos[i] = (curr_count < 0) ? -1: (curr_count > 0)? 1: 0;
         if (arr[i] == 0) {
             if (curr_count > 0)
                 positives++;
             else if (curr_count < 0)
                 negatives++;
             cost_0[i] = real_index-last_0;
+            //if (cost_0[i] < 0)
+            //    cout << "WTF1\n";
             cost_1[i] = real_index-last_1;
             if (curr_count < 0) {
                 cost_2[i] = real_index-last_1;
             }
             continue;
         }
+        
         real_index++;
         if (arr[i] == 1)
             curr_count++;
@@ -93,18 +117,35 @@ void solve() {
             last_1 = real_index;
         
     }
+    //cout << "\n";
 
-    last_0=INF;
-    last_1=INF;
+    if (curr_count == 0)
+        last_0=real_index;
+    else
+        last_0=INF;
+    if (curr_count == 1)
+        last_1=real_index;
+    else
+        last_1 = INF;
 
-    real_index=n-1;
+    //real_index=n-1;
     ROF(i,0,n) {
         if (arr[i] == 0) {
-            cost_0[i] = min(cost_0[i], last_0-real_index);
-            //cout << cost_1[i] << " " << last_1-real_index << "\n";
-            cost_1[i] = min(cost_1[i], last_1-real_index);
+            int aux_cost0 = last_0 - real_index;
+            if (aux_cost0 < cost_0[i]) {
+                cost_0[i] = aux_cost0;
+                magic[i] *= -1;
+            }
+            //if (cost_0[i] < 0)
+            //    cout << "WTF2\n";
+            int aux_cost1 = last_1 - real_index;
+            if (aux_cost1 < cost_1[i]) {
+                cost_1[i] = aux_cost1;
+                magic[i] *= -1;
+            }
+
             if (curr_count < 0) {
-                cost_2[i] = last_1-real_index;
+                cost_2[i] = min(cost_2[i], aux_cost1);
             }
             continue;
         }
@@ -119,73 +160,206 @@ void solve() {
             curr_count++;
         
     }
-    /*
+    
+    print_v(cost_0);
+    print_v(cost_1);
+    print_v(pos);
+    
+    //-------------------FILL THE PRIORITY QUEUES------------//
     FOR(i,0,n) {
-        cout << cost_0[i] << " ";
-    }
-    cout << "\n";
-    FOR(i,0,n) {
-        cout << cost_1[i] << " ";
-    }
-    cout << "\n";
-    */
-
-    FOR(i,0,n) {
-        if (cost_0[i] != 0)
+        if (cost_0[i] != 0 && cost_0[i] < 6000)
             pq_0.push(MP(cost_0[i], i));
-        if (cost_1[i] != 0)
+        if (cost_1[i] != 0 && cost_1[i] < 6000)
             pq_1.push(MP(cost_1[i], i));
-        if (cost_2[i] != 0)
-            pq_2.push(MP(cost_1[i], i));
+        if (cost_2[i] != 0 && cost_2[i] < 6000)
+            pq_2.push(MP(cost_2[i], i));
     }
+    //----------------------------------------------------------------//
 
     int diff = negatives-positives;
 
     int ans = 0;
 
-    vector<bool> moved(n, false);
+    // for -1 to 1, keep variable that says distance from 0 to 1. if taken 0, push distance to ar_1
+    while (true) {
 
-    pi aux2 = pq_2.empty() ? MP(0,-1): pq_2.top();
-    pi aux1 = pq_1.empty() ? MP(0,-1): pq_1.top();
-    pi aux0 = pq_0.empty() ? MP(0,-1): pq_0.top();
-    
-    if (!pq_1.empty() && positives == 0 && aux1.S == aux0.S) {
-        pq_0.pop();
-        aux0 = pq_0.top();
+        if (diff < 0 && positives > 0) {
+            cout << ans << "\n";
+            return;
+        }
+
+        //-------------LOAD BEST POSSIBLE NEXT STEPS------------//
+        pi def = MP(INF,-1);
+        pi pi0=def, pi01=def, pi1=def, pi11=def, pi2=def;
+        while(!pq_2.empty() && pi2 == def) {
+            pi2 = pq_2.top();
+            pq_2.pop();
+            if (pos[pi2.S] != -1)
+                pi2 = def;
+        }
+        while(!pq_1.empty() && pi1 == def) {
+            pi1 = pq_1.top();
+            pq_1.pop();
+            if (pos[pi1.S] != 0)
+                pi1 = def;
+        }
+        while(!pq_0.empty() && pi0 == def) {
+            pi0 = pq_0.top();
+            pq_0.pop();
+            if (pos[pi0.S] != -1)
+                pi0 = def;
+        }
+        while(!pq_1.empty() && pi11 == def) {
+            pi11 = pq_1.top();
+            pq_1.pop();
+            if (pos[pi11.S] != 0)
+                pi11 = def;
+        }
+        pq_1.push(pi11);    // It will not be used int this iteration, so we put it back in
+        while(!pq_0.empty() && pi01 == def) {
+            pi01 = pq_0.top();
+            pq_0.pop();
+            if (pos[pi01.S] != -1)
+                pi01 = def;
+        }
+        pq_0.push(pi01);    // It will not be used int this iteration, so we put it back in
+        //------------------------------------------------------//
+
+        //-----------------If no possible pairs, finish---------//
+        if (pi2==def && pi1==def && pi0==def) {
+            cout << "impossible\n";
+            return;
+        }
+        //------------------------------------------------------//
+        
+        if (positives == 0) {
+            if (diff == 0) {
+                if (pi1 == def) { // If we can't promote a teller to 1, then impossible
+                    cout << "impossible\n";
+                    return;
+                } else {    // Do the least cost swap and then finish
+                    if (DEBUG)
+                        cout << "case 0 to 1\n";
+                    ans += pi1.F;
+                    positives++;
+                    diff--;
+                    pos[pi1.S] = 1;
+                    // We need to push back the options we didnt take
+                    pq_0.push(pi0);
+                    pq_2.push(pi2);
+                    continue;
+                }
+            } else if (pi2 != def && pi2.F <= pi1.F + pi11.F && pi2.F <= pi0.F + pi1.F) {
+                if (DEBUG)
+                    cout << "case -1 to 1\n";
+                ans += pi2.F;
+                positives++;
+                diff -= 2;
+                pos[pi2.S] = 1;
+                // We need to push back the options we didnt take
+                pq_0.push(pi0);
+                pq_1.push(pi1);
+                continue;
+            } else if (pi1 != def) {
+                if (DEBUG)
+                    cout << "case 0 to 1\n";
+                ans += pi1.F;
+                positives++;
+                diff--;
+                pos[pi1.S] = 1;
+                // We need to push back the options we didnt take
+                pq_0.push(pi0);
+                pq_2.push(pi2);
+                continue;
+            } else {
+                cout << "impossible\n";
+                return;
+            }
+        }
+
+        //------------------Case of last swap remaining---------//
+        /*if (diff == 0) {
+            //If we have no tellers with positive, we need to add one
+            if (positives == 0) {
+                if (pi1 == def) { // If we can't promote a teller to 1, then impossible
+                    cout << "impossible\n";
+                    return;
+                } else {    // Do the least cost swap and then finish
+                    ans += pi1.F;
+                    cout << ans << "\n";
+                    return;
+                }
+            } else {    // If there is at least one positive, then we only need one more vote
+                int best_choice = min(pi0.F, pi1.F);    // Take the least expensive
+                if (best_choice != INF) {   // If at least one isn't INF, we finish
+                    ans += best_choice;
+                    cout << ans << "\n";
+                    return;
+                } else {    // If they are both INF, then impossible
+                    cout << "impossible\n";
+                    return;
+                }
+            }
+        }*/
+        //------------------------------------------------------//
+
+        // If directly promoting from -1 to 1 is better than any other pair of possible options, we do it
+
+        print("pi2", pi2);
+        print("pi1", pi1);
+        print("pi11", pi11);
+        print("pi0", pi0);
+        print("pi01", pi01);
+        if (pi2 != def && pi2.F <= pi1.F + pi11.F && pi2.F <= pi0.F + pi01.F && pi2.F <= pi0.F + pi1.F) {
+            if (DEBUG)
+                cout << "case -1 to 1\n";
+            ans += pi2.F;
+            positives++;
+            diff -= 2;
+            pos[pi2.S] = 1;
+
+            // We need to push back the options we didnt take
+            pq_0.push(pi0);
+            pq_1.push(pi1);
+        } else if (pi1 != def && pi1.F <= pi0.F) {
+            if (DEBUG)
+                cout << "case 0 to 1\n";
+            ans += pi1.F;
+            positives++;
+            diff--;
+            pos[pi1.S] = 1;
+
+            // We need to push back the options we didnt take
+            pq_0.push(pi0);
+            pq_2.push(pi2);
+        } else if (pi0 != def) {
+            if (DEBUG)
+                cout << "case -1 to 0\n";
+            ans += pi0.F;
+            diff--;
+            pos[pi0.S] = 0;
+
+            // We need to push back the options we didnt take
+            pq_1.push(pi1);
+            pq_2.push(pi2);
+
+            // now, if we are closer to the one, we insert the new cost
+            /*
+            if (magic[pi0.S] == 1) {
+                // We take the distance from closest 0 pos to closest 1 pos
+                int distance = abs(cost_0[pi0.S] - cost_1[pi1.S]);
+                pq_1.push(MP(distance, pi0.S));
+            }
+            */
+            int distance = cost_1[pi1.S] - cost_0[pi0.S];
+            pq_1.push(MP(distance, pi0.S));
+
+            // if it is on the other side, then we need to put in the case that
+            // we didnt take this step and instead went for the one. The cost for this would be
+            // the cost_1, but we undo the 0 movement, so substract the cost 0
+
+        }
     }
-
-    //cout << diff << " " << positives << "\n";
-    if (!pq_2.empty() && positives == 0 && diff > 0 && (aux2.F <= aux1.F + aux0.F)) {
-        moved[aux2.S] = true;
-        ans += aux2.F;
-        diff-=2;
-        positives++;
-        //cout << "NOPE\n";
-    } else if (positives == 0 && !pq_1.empty()) {
-        pi aux = pq_1.top();
-
-        moved[aux.S] = true;
-        ans += aux.F;
-        diff--;
-        positives++;
-        //cout << "YES\n";
-    }
-
-    while (diff >= 0 && !pq_0.empty()) {
-        pi aux = pq_0.top();
-        pq_0.pop();
-        if (moved[aux.S])
-            continue;
-        //cout << "move index " << aux.S << "\n";
-        ans += aux.F;
-        diff--;
-    }
-
-    if (diff >= 0 || positives==0)
-        cout << "impossible\n";
-    else
-        cout << ans << "\n";
-
 
 }
 
