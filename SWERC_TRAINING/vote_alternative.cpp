@@ -70,10 +70,7 @@ void solve() {
     vi pos(n, -1);
     priority_queue<pi, vector<pi>, greater<pi>> pq_0;
     priority_queue<pi, vector<pi>, greater<pi>> pq_1;
-    priority_queue<pi, vector<pi>, greater<pi>> pq_2;
-
-    vi magic(n, 1);    // For a teller indicates wether closest 0 and 1 are on the same side (1)
-    
+    priority_queue<pi, vector<pi>, greater<pi>> pq_2;    
 
     // Number of tellers with positive/negative vote
     int positives = 0;
@@ -97,8 +94,6 @@ void solve() {
             else if (curr_count < 0)
                 negatives++;
             cost_0[i] = real_index-last_0;
-            //if (cost_0[i] < 0)
-            //    cout << "WTF1\n";
             cost_1[i] = real_index-last_1;
             if (curr_count < 0) {
                 cost_2[i] = real_index-last_1;
@@ -125,21 +120,10 @@ void solve() {
     //real_index=n-1;
     ROF(i,0,n) {
         if (arr[i] == 0) {
-            int aux_cost0 = last_0 - real_index;
-            if (aux_cost0 < cost_0[i]) {
-                cost_0[i] = aux_cost0;
-                magic[i] *= -1;
-            }
-            //if (cost_0[i] < 0)
-            //    cout << "WTF2\n";
-            int aux_cost1 = last_1 - real_index;
-            if (aux_cost1 < cost_1[i]) {
-                cost_1[i] = aux_cost1;
-                magic[i] *= -1;
-            }
-
+            cost_0[i] = min(cost_0[i], last_0 - real_index);
+            cost_1[i] = min(cost_1[i], last_1 - real_index);
             if (curr_count < 0) {
-                cost_2[i] = min(cost_2[i], aux_cost1);
+                cost_2[i] = min(cost_2[i], last_1 - real_index);
             }
             continue;
         }
@@ -177,6 +161,10 @@ void solve() {
     // for -1 to 1, keep variable that says distance from 0 to 1. if taken 0, push distance to ar_1
     while (true) {
 
+
+        if (ans > 25000) {
+            cout << "impossible\n";
+        }
         if (diff < 0 && positives > 0) {
             cout << ans << "\n";
             return;
@@ -225,55 +213,6 @@ void solve() {
             return;
         }
         //------------------------------------------------------//
-        if (DEBUG)
-            cout << "HOLLAAAA\n";
-        if (positives == 0) {
-            if (DEBUG)
-                cout << "EYOOOO\n";
-            if (diff == 0) {
-                if (pi1 == def) { // If we can't promote a teller to 1, then impossible
-                    cout << "impossible\n";
-                    return;
-                } else {    // Do the least cost swap and then finish
-                    if (DEBUG)
-                        cout << "case 0 to 1\n";
-                    ans += pi1.F;
-                    positives++;
-                    diff--;
-                    pos[pi1.S] = 1;
-                    // We need to push back the options we didnt take
-                    pq_0.push(pi0);
-                    pq_2.push(pi2);
-                    continue;
-                }
-            } else if (pi2 != def && pi2.F <= pi1.F + pi11.F && pi2.F <= pi0.F + pi1.F) {
-                if (DEBUG)
-                    cout << "case -1 to 1\n";
-                ans += pi2.F;
-                positives++;
-                diff -= 2;
-                pos[pi2.S] = 1;
-                // We need to push back the options we didnt take
-                pq_0.push(pi0);
-                pq_1.push(pi1);
-                continue;
-            } else if (pi1 != def) {
-                if (DEBUG)
-                    cout << "case 0 to 1\n";
-                ans += pi1.F;
-                positives++;
-                diff--;
-                pos[pi1.S] = 1;
-                // We need to push back the options we didnt take
-                pq_0.push(pi0);
-                pq_2.push(pi2);
-                continue;
-            } else {
-                cout << "impossible\n";
-                return;
-            }
-        }
-
         // If directly promoting from -1 to 1 is better than any other pair of possible options, we do it
         if (DEBUG)
             cout << "NO EYOOO\n";
@@ -297,7 +236,7 @@ void solve() {
             if (DEBUG)
                 cout << "case 0 to 1\n";
             ans += pi1.F;
-            positives++;
+            //positives++;
             diff--;
             pos[pi1.S] = 1;
 
