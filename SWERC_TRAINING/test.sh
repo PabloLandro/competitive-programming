@@ -4,7 +4,7 @@
 BIN="./a.out"
 
 # Folder containing test cases
-TEST_DIR="tests"
+TEST_DIR="tests_vote"
 
 # Counter for results
 passed=0

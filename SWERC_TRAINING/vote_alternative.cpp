@@ -162,7 +162,7 @@ void solve() {
     while (true) {
 
 
-        if (ans > 25000) {
+        if (ans > 5000*5000) {
             cout << "impossible\n";
         }
         if (diff < 0 && positives > 0) {

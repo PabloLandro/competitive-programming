@@ -1,11 +1,10 @@
-//#include <iostream>
-//#include <vector>
-//#include <algorithm>
-//#include <cmath>
-//#include <map>
-//#include <set>
-//#include <stack>
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <map>
+#include <set>
+#include <stack>
 using namespace std;   // Tipos
 #define ll long long   // 64 bits INT
 #define ld long double // 80 bits FP 
@@ -37,51 +36,21 @@ typedef vector<vector<pair<int, int>>> wgraph;
 #define FOR(i, a, b) for(int i = a; i < b; i++)
 #define ROF(i, a, b) for(int i = b-1; i>=0; i--)
 
-#define MAX_N 1000000
+void solve() {
+    ll n, m;
 
-umap<ll,ll> memo;
+    cin >> n >> m;
 
-ll big = 0;
-ll small = 0;
-
-int segment_tree[4*MAX_N];
-
-ll count(ll input) {
-    big = max(big, input);
-    small = min(small, input);
-    if (input == 0)
-        return 0;
-    if (input == 1)
-        return 1;
-    if (memo[input] != 0)
-        return memo[input];
-    if (input & 1) {
-        memo[input] = 1 + count(3*input+1);
-        return memo[input];
+    if (m < n-1 || m > 2*n-3) {
+        cout << "-1\n";
+        return;
     }
-    memo[input] = 1 + count(input / 2);
-    return memo[input];
-}
+    ll ans = m*(m+1)/2;
+    ans -= 1 + 2;
+    ans += 2*m + 3;
 
-bool solve() {
-    int i, j;
-
-    if (!cin)
-        return false;
-
-    cin >> i;
-
-    if (!cin)
-       return false;
-    cin >> j;
-
-    ll ans = 0;
-
-    FOR(k,i-1,j+2) {
-        ans = max(ans, count((ll)k));
-    }
-    cout << i << " " << j << " " << ans << endl;
-    return true;
+    cout << ans << endl;
+    return;
 }
 
 int main()
@@ -91,6 +60,5 @@ int main()
     cin.tie(0);
     cout.tie(0);
 
-    while (solve());
-
+    solve();
 }
