@@ -20,6 +20,7 @@
         "map": "cpp",
         "set": "cpp",
         "unordered_map": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "list": "cpp"
     }
 }

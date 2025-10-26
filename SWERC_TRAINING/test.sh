@@ -4,17 +4,17 @@
 BIN="./a.out"
 
 # Folder containing test cases
-TEST_DIR="tests_vote"
+TEST_DIR="tests_bombardment"
 
 # Counter for results
 passed=0
 total=0
 
 # Loop through all .in files
-for infile in "$TEST_DIR"/case*.in; do
+for infile in "$TEST_DIR"/*.in; do
     # Extract base name (e.g., case0)
     base=$(basename "$infile" .in)
-    outfile="$TEST_DIR/$base.out"
+    outfile="$TEST_DIR/$base.ans"
     tmpfile="$TEST_DIR/$base.tmp"
 
     # Run the binary and redirect input/output
